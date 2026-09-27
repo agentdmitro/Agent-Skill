@@ -151,7 +151,10 @@ def _thin_xticks(ax: Axes, max_labels: int = 12) -> None:
 def _draw_multi_language_chart(
     fig: _AnyFigure, series_by_language: dict[str, PageviewSeries], primary_normalized: bool
 ) -> None:
-    axes = fig.subplots(2, 1)
+    # Give the rotated month labels enough vertical clearance before the next
+    # panel's title, especially when this chart is embedded in the one-page
+    # report's smaller SubFigure.
+    axes = fig.subplots(2, 1, gridspec_kw={"hspace": 0.7})
     absolute_ax, normalized_ax = (axes[1], axes[0]) if primary_normalized else (axes[0], axes[1])
 
     for language, series in sorted(series_by_language.items()):
@@ -179,7 +182,7 @@ def _draw_multi_language_chart(
     normalized_ax.legend(fontsize=8)
     _thin_xticks(normalized_ax)
     if hasattr(fig, "tight_layout"):
-        fig.tight_layout()
+        fig.tight_layout(pad=0.25, h_pad=1.5)
 
 
 def generate_chart(
@@ -236,23 +239,42 @@ def _report_lead_sentence(run: RunResult) -> str:
     return f"{len(languages)} Wikipedia editions were analyzed; no edition shows reliable growth."
 
 
+_CANDIDATE_RANK = {
+    CandidateClassification.STRONG_CANDIDATE: 0,
+    CandidateClassification.POSSIBLE_CANDIDATE: 1,
+    CandidateClassification.WEAK_CURRENT_SIGNAL: 2,
+    CandidateClassification.INCONCLUSIVE: 3,
+}
+_CANDIDATE_TEXT_PLURAL = {
+    CandidateClassification.STRONG_CANDIDATE: "strong candidates for further validation",
+    CandidateClassification.POSSIBLE_CANDIDATE: "possible candidates for further validation",
+    CandidateClassification.WEAK_CURRENT_SIGNAL: "weak current Wikipedia interest signals",
+    CandidateClassification.INCONCLUSIVE: "inconclusive based on Wikipedia interest alone",
+}
+
+
 def _report_candidate_sentence(run: RunResult) -> str:
-    ranked = sorted(
-        run.languages,
-        key=lambda lang: (
-            0
-            if lang.candidate_classification is CandidateClassification.STRONG_CANDIDATE
-            else 1
-            if lang.candidate_classification is CandidateClassification.POSSIBLE_CANDIDATE
-            else 2,
-            lang.language,
-        ),
-    )
-    if not ranked:
+    if not run.languages:
         return "No language edition has enough evidence to name a validation candidate."
-    top = ranked[0]
-    verdict = _CANDIDATE_TEXT[top.candidate_classification]
-    return f"Based on Wikipedia attention alone, {top.language} is {verdict}."
+    best_rank = min(_CANDIDATE_RANK[lang.candidate_classification] for lang in run.languages)
+    top_classification = next(
+        lang.candidate_classification
+        for lang in run.languages
+        if _CANDIDATE_RANK[lang.candidate_classification] == best_rank
+    )
+    tied = sorted(
+        lang.language
+        for lang in run.languages
+        if lang.candidate_classification is top_classification
+    )
+    if len(tied) == 1:
+        verdict = _CANDIDATE_TEXT[top_classification]
+        return f"Based on Wikipedia attention alone, {tied[0]} is {verdict}."
+    plural_verdict = _CANDIDATE_TEXT_PLURAL[top_classification]
+    if len(tied) == len(run.languages):
+        return f"Based on Wikipedia attention alone, all analyzed editions are {plural_verdict}."
+    languages = ", ".join(tied)
+    return f"Based on Wikipedia attention alone, {languages} are {plural_verdict}."
 
 
 def generate_report(

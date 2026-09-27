@@ -118,6 +118,46 @@
     ]
   },
   {
+    "id": "infer_query_language_astronomy_uk_pl_cs",
+    "category": "basic",
+    "description": "A clearly English natural-language topic infers query_language=en even when the requested editions are Ukrainian, Polish, and Czech; do not ask a query-language clarification before topic resolution.",
+    "user_messages": ["Compare interest in astronomy across uk, pl, cs"],
+    "reference_date": "2026-01-15",
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "astronomy",
+          "query_language": "en",
+          "languages": ["uk", "pl", "cs"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": "Q333",
+          "label": "Astronomy",
+          "sitelinks": {
+            "uk": "Астрономія",
+            "pl": "Astronomia",
+            "cs": "Astronomie"
+          },
+          "trend": "growing"
+        },
+        "expected": {
+          "skill_should_activate": true,
+          "requires_clarification": false,
+          "status": "success",
+          "expected_topic_id": "Q333",
+          "expected_languages": ["uk", "pl", "cs"],
+          "expected_intent": "compare",
+          "min_languages_analyzed": 3,
+          "comparison_present": true,
+          "forbidden_in_findings": false,
+          "notes": "The model must infer query_language=en from the topic phrase, not from the requested editions."
+        }
+      }
+    ]
+  },
+  {
     "id": "direct_qid_mercury_planet",
     "category": "basic",
     "description": "Baseline scenario 5: direct QID path skips topic search entirely.",

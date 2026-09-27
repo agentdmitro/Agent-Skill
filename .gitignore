@@ -29,3 +29,6 @@ eval-results/
 # Env files (never commit secrets, e.g. OPENROUTER_API_KEY)
 .env
 .env.*
+
+# Other 
+.codex
