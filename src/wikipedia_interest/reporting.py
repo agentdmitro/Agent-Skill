@@ -261,6 +261,8 @@ def generate_report(
     """One-page deterministic PDF research brief. A single matplotlib Figure is one PDF page."""
     fig = None
     try:
+        if not run.languages:
+            raise ArtifactError("no successfully analyzed language data")
         path = safe_artifact_path(output_dir, _report_filename(run))
         fig = plt.figure(figsize=_FIGSIZE_A4)
         grid = fig.add_gridspec(nrows=4, height_ratios=[1.1, 2.6, 1.6, 0.9], hspace=0.55)

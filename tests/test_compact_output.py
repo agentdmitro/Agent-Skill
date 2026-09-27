@@ -16,8 +16,8 @@ def _run(languages: tuple[str, ...], intent: str) -> RunResult:
 
     def fetch(request: httpx.Request) -> httpx.Response:
         for lang, title in sitelinks.items():
-            if f"{lang}.wikipedia.org" in request.url.path:
-                return pageview_response(title, f"{lang}.wikipedia.org")
+            if f"{lang}.wikipedia" in request.url.path:
+                return pageview_response(title, f"{lang}.wikipedia")
         raise AssertionError("unexpected fetch")
 
     env = Env(default_resolver("Q1", "Topic", sitelinks, languages), fetch)
@@ -77,7 +77,7 @@ def test_json_is_deterministic_across_dumps() -> None:
 
 def test_json_serialization_preserves_unicode() -> None:
     def fetch(request: httpx.Request) -> httpx.Response:
-        return pageview_response("Астрономіятопик", "uk.wikipedia.org")
+        return pageview_response("Астрономіятопик", "uk.wikipedia")
 
     env = Env(
         default_resolver(

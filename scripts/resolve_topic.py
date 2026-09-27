@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """Resolve a topic to verified Wikimedia article titles."""
 
-# ruff: noqa: E501
-
 import argparse
 import json
 import sys

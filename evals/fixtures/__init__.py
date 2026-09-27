@@ -231,7 +231,7 @@ def multi_language_env(
 ) -> Env:
     """A resolver + fetch pair serving every language in `sitelinks` with a distinct,
     deterministic pageview series so cross-language comparisons have real variation."""
-    projects = {lang: f"{lang}.wikipedia.org" for lang in sitelinks}
+    projects = {lang: f"{lang}.wikipedia" for lang in sitelinks}
     step_by_language = {
         lang: (20 if trend == "growing" else -10 if trend == "declining" else 0) + (i * 3)
         for i, lang in enumerate(sitelinks)

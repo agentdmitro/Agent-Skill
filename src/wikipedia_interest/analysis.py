@@ -245,7 +245,16 @@ def _calendar_window(end: date, length: int) -> list[date]:
     return list(reversed(out))
 
 
-def _recent(points: Sequence[PageviewPoint], end: date) -> tuple[float | None, RecentConfirmation]:
+def _recent(
+    points: Sequence[PageviewPoint], end: date, direction: TrendDirection
+) -> tuple[float | None, RecentConfirmation]:
+    """Whether the most recent comparable window moved with or against `direction`.
+
+    For a declining trend, a further negative recent change *confirms* it (and a positive one
+    contradicts it) -- the opposite sign mapping from a growing trend. Stable/unclear/other
+    directions keep the plain sign-of-change mapping, since there is no long-term direction to
+    confirm or contradict against.
+    """
     latest_months = _calendar_window(end, RECENT_WINDOW_MONTHS)
     previous_end = latest_months[0]
     y, m = previous_end.year, previous_end.month - 1
@@ -258,6 +267,12 @@ def _recent(points: Sequence[PageviewPoint], end: date) -> tuple[float | None, R
     change = _safe_change(_median(latest), _median(previous))
     if change is None:
         return None, RecentConfirmation.MIXED
+    if direction is TrendDirection.DECLINING:
+        if change <= -RECENT_CONFIRMATION_THRESHOLD:
+            return change, RecentConfirmation.CONFIRMED
+        if change >= RECENT_CONFIRMATION_THRESHOLD:
+            return change, RecentConfirmation.CONTRADICTED
+        return change, RecentConfirmation.FLATTENED
     if change >= RECENT_CONFIRMATION_THRESHOLD:
         return change, RecentConfirmation.CONFIRMED
     if change <= -RECENT_CONFIRMATION_THRESHOLD:
@@ -388,7 +403,7 @@ def analyze_pageview_series(series: PageviewSeries) -> AnalysisReport:
     outlier_list = _outliers(points)
     dependency = _dependency(points, outlier_list, slope)
     recent_change, recent_confirmation = (
-        _recent(points, series.period.end)
+        _recent(points, series.period.end, direction)
         if requested >= 12
         else (None, RecentConfirmation.UNAVAILABLE)
     )

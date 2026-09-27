@@ -137,7 +137,7 @@ def build_env(fixture: dict[str, Any] | None) -> Env:
     timeout_languages = set(fixture.get("timeout_languages", ()))
     sparse = bool(fixture.get("sparse", False))
     trend = fixture.get("trend", "growing")
-    projects = {lang: f"{lang}.wikipedia.org" for lang in sitelinks}
+    projects = {lang: f"{lang}.wikipedia" for lang in sitelinks}
 
     def fetch(request: httpx.Request) -> httpx.Response:
         for i, (lang, title) in enumerate(sitelinks.items()):

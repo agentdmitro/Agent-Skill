@@ -1,7 +1,6 @@
 """Conservative, API-backed Wikidata to Wikipedia topic resolution."""
 
 # The API error messages and union annotations are intentionally kept readable.
-# ruff: noqa: E501
 
 import os
 import re
@@ -31,7 +30,7 @@ from wikipedia_interest.wikimedia import (
     MAX_ATTEMPTS,
     MAX_RETRY_AFTER_SECONDS,
     TIMEOUT_SECONDS,
-    project_for_language,
+    wikipedia_domain,
 )
 
 WIKIDATA_API = "https://www.wikidata.org/w/api.php"
@@ -41,7 +40,7 @@ _TRANSIENT = frozenset({429, 500, 502, 503, 504})
 
 def wikidata_site_for_language(language: str) -> str:
     """Map a language code to the corresponding Wikidata Wikipedia sitelink key."""
-    project_for_language(language)
+    wikipedia_domain(language)
     return f"{language}wiki"
 
 
@@ -143,7 +142,7 @@ class TopicResolver:
                 unavailable[language] = checked
             else:
                 articles[language] = ResolvedArticle(
-                    title=checked, project=project_for_language(language)
+                    title=checked, project=wikipedia_domain(language)
                 )
 
         if not articles:
@@ -332,7 +331,7 @@ class TopicResolver:
         self, language: str, title: str
     ) -> str | UnavailableReason | UpstreamFailureResult:
         response = self._request(
-            f"https://{project_for_language(language)}/w/api.php",
+            f"https://{wikipedia_domain(language)}/w/api.php",
             {
                 "action": "query",
                 "titles": title,

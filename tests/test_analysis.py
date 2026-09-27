@@ -88,6 +88,42 @@ def test_yoy_and_recent_confirmation_are_calendar_aligned() -> None:
     assert result.metrics.recent_change == pytest.approx(0.5)
 
 
+@pytest.mark.parametrize(
+    ("values", "direction", "confirmation"),
+    [
+        (
+            [100] * 12 + [200] * 6 + [300] * 6,
+            TrendDirection.GROWING,
+            RecentConfirmation.CONFIRMED,
+        ),
+        (
+            [100] * 6 + [220, 240, 260, 280, 300, 320] + [150] * 6,
+            TrendDirection.GROWING,
+            RecentConfirmation.CONTRADICTED,
+        ),
+        (
+            [300] * 12 + [200] * 6 + [100] * 6,
+            TrendDirection.DECLINING,
+            RecentConfirmation.CONFIRMED,
+        ),
+        (
+            [1000] * 6 + [500, 480, 460, 440, 420, 400] + [500] * 6,
+            TrendDirection.DECLINING,
+            RecentConfirmation.CONTRADICTED,
+        ),
+    ],
+)
+def test_recent_confirmation_compares_against_long_term_direction(
+    values: list[int], direction: TrendDirection, confirmation: RecentConfirmation
+) -> None:
+    """A declining trend is *confirmed* by further decline and *contradicted* by a rebound --
+    the opposite sign mapping from a growing trend, since confirmation means agreement with the
+    long-term direction, not a fixed sign of the recent change."""
+    result = analyze_pageview_series(series(values))
+    assert result.trend.direction is direction
+    assert result.metrics.recent_confirmation is confirmation
+
+
 def test_zero_values_never_emit_invalid_numbers() -> None:
     zero = analyze_pageview_series(series([0] * 12))
     assert zero.trend.direction is TrendDirection.STABLE

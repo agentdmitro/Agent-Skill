@@ -70,7 +70,7 @@ from wikipedia_interest.reporting import (
     sanitize_slug,
 )
 from wikipedia_interest.resolver import TopicResolver, wikidata_site_for_language
-from wikipedia_interest.wikimedia import WikimediaClient, project_for_language
+from wikipedia_interest.wikimedia import WikimediaClient, pageviews_project, wikipedia_domain
 
 __all__ = [
     "AnalysisEvidence",
@@ -132,10 +132,11 @@ __all__ = [
     "generate_chart",
     "generate_report",
     "invalid_input_from",
-    "project_for_language",
+    "pageviews_project",
     "run_analysis",
     "run_comparison",
     "safe_artifact_path",
     "sanitize_slug",
     "wikidata_site_for_language",
+    "wikipedia_domain",
 ]

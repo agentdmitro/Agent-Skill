@@ -135,9 +135,9 @@ def default_resolver(
 
 def en_or_pl(path: str) -> tuple[str, str]:
     """(article, project) for a pageview fetch path, given the en/pl fixtures above."""
-    if "pl.wikipedia.org" in path:
-        return "Astronomia", "pl.wikipedia.org"
-    return "Astronomy", "en.wikipedia.org"
+    if "pl.wikipedia" in path:
+        return "Astronomia", "pl.wikipedia"
+    return "Astronomy", "en.wikipedia"
 
 
 def build_request(**overrides: Any) -> RunAnalysisRequest:
@@ -159,7 +159,7 @@ def build_request(**overrides: Any) -> RunAnalysisRequest:
 def test_successful_single_language_end_to_end() -> None:
     env = Env(
         default_resolver("Q1", "Astronomy", {"en": "Astronomy"}, ("en",)),
-        lambda req: pageview_response("Astronomy", "en.wikipedia.org"),
+        lambda req: pageview_response("Astronomy", "en.wikipedia"),
     )
     result = env.run(build_request(languages=("en",), intent="trend"))
     assert isinstance(result, RunResult)
@@ -171,7 +171,7 @@ def test_successful_single_language_end_to_end() -> None:
 
 def test_successful_multi_language_comparison() -> None:
     sitelinks = {"en": "Astronomy", "pl": "Astronomia", "cs": "Astronomie"}
-    projects = {"en": "en.wikipedia.org", "pl": "pl.wikipedia.org", "cs": "cs.wikipedia.org"}
+    projects = {"en": "en.wikipedia", "pl": "pl.wikipedia", "cs": "cs.wikipedia"}
 
     def fetch(request: httpx.Request) -> httpx.Response:
         path = request.url.path
@@ -216,7 +216,7 @@ def test_direct_qid_bypasses_search() -> None:
             return httpx.Response(200, json={"search": []})
         return default_resolver("Q333", "Mercury", {"en": "Mercury"}, ("en",))(request)
 
-    env = Env(resolve, lambda req: pageview_response("Mercury", "en.wikipedia.org"))
+    env = Env(resolve, lambda req: pageview_response("Mercury", "en.wikipedia"))
     req = build_request(topic="Q333", languages=("en",), intent="trend")
     result = env.run(req)
     assert isinstance(result, RunResult)
@@ -244,7 +244,7 @@ def test_one_upstream_failure_two_successful() -> None:
     sitelinks = {"en": "Astronomy", "pl": "Astronomia", "cs": "Astronomie"}
 
     def fetch(request: httpx.Request) -> httpx.Response:
-        if "cs.wikipedia.org" in request.url.path:
+        if "cs.wikipedia" in request.url.path:
             return httpx.Response(503)
         title, project = en_or_pl(request.url.path)
         return pageview_response(title, project)
@@ -275,9 +275,9 @@ def test_only_one_language_survives_requested_comparison() -> None:
     sitelinks = {"en": "Astronomy", "pl": "Astronomia"}
 
     def fetch(request: httpx.Request) -> httpx.Response:
-        if "pl.wikipedia.org" in request.url.path:
+        if "pl.wikipedia" in request.url.path:
             return httpx.Response(503)
-        return pageview_response("Astronomy", "en.wikipedia.org")
+        return pageview_response("Astronomy", "en.wikipedia")
 
     env = Env(default_resolver("Q1", "Astronomy", sitelinks, tuple(sitelinks)), fetch)
     result = env.run(build_request(languages=tuple(sitelinks), intent="compare"))
@@ -308,7 +308,7 @@ def test_previous_state_reuses_qid_without_research() -> None:
             calls["search"] += 1
         return default_resolver("Q1", "Astronomy", {"en": "Astronomy"}, ("en",))(request)
 
-    env = Env(resolve, lambda req: pageview_response("Astronomy", "en.wikipedia.org"))
+    env = Env(resolve, lambda req: pageview_response("Astronomy", "en.wikipedia"))
     previous = AnalysisState(
         analysis_id="wi-q1",
         version=1,
@@ -377,7 +377,7 @@ def test_inconsistent_state_rejected() -> None:
 def test_artifacts_disabled_by_default() -> None:
     env = Env(
         default_resolver("Q1", "Astronomy", {"en": "Astronomy"}, ("en",)),
-        lambda req: pageview_response("Astronomy", "en.wikipedia.org"),
+        lambda req: pageview_response("Astronomy", "en.wikipedia"),
     )
     result = env.run(build_request(languages=("en",), intent="trend"))
     assert isinstance(result, RunResult)
@@ -387,7 +387,7 @@ def test_artifacts_disabled_by_default() -> None:
 def test_artifacts_enabled_produce_files(tmp_path: Any) -> None:
     env = Env(
         default_resolver("Q1", "Astronomy", {"en": "Astronomy"}, ("en",)),
-        lambda req: pageview_response("Astronomy", "en.wikipedia.org"),
+        lambda req: pageview_response("Astronomy", "en.wikipedia"),
     )
     result = env.run(
         build_request(
@@ -412,7 +412,7 @@ def test_artifact_failure_does_not_destroy_valid_analysis(tmp_path: Any) -> None
     blocked.write_text("not a directory")
     env = Env(
         default_resolver("Q1", "Astronomy", {"en": "Astronomy"}, ("en",)),
-        lambda req: pageview_response("Astronomy", "en.wikipedia.org"),
+        lambda req: pageview_response("Astronomy", "en.wikipedia"),
     )
     result = env.run(
         build_request(

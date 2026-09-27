@@ -3,7 +3,13 @@ from typing import Any
 import httpx
 import pytest
 
-from wikipedia_interest import PageviewSeries, Period, WikimediaClient, project_for_language
+from wikipedia_interest import (
+    PageviewSeries,
+    Period,
+    WikimediaClient,
+    pageviews_project,
+    wikipedia_domain,
+)
 from wikipedia_interest.contracts import (
     InvalidInputResult,
     UnsupportedCode,
@@ -18,7 +24,7 @@ PERIOD = Period.model_validate({"start": "2024-01", "end": "2024-03"})
 
 def item(month: str, views: Any = 10, **over: Any) -> dict[str, Any]:
     d = {
-        "project": "uk.wikipedia.org",
+        "project": "uk.wikipedia",
         "article": "Астрономія",
         "granularity": "monthly",
         "timestamp": month.replace("-", "") + "0100",
@@ -64,11 +70,27 @@ def failure(result: Any, code: UpstreamFailureCode) -> UpstreamFailureResult:
     return result
 
 
-def test_project_mapping() -> None:
-    assert project_for_language("uk") == "uk.wikipedia.org"
-    assert project_for_language("simple") == "simple.wikipedia.org"
+def test_wikipedia_domain_mapping() -> None:
+    assert wikipedia_domain("uk") == "uk.wikipedia.org"
+    assert wikipedia_domain("simple") == "simple.wikipedia.org"
     with pytest.raises(ValueError):
-        project_for_language("uk.evil.com/")
+        wikipedia_domain("uk.evil.com/")
+
+
+def test_pageviews_project_mapping() -> None:
+    assert pageviews_project("uk") == "uk.wikipedia"
+    assert pageviews_project("simple") == "simple.wikipedia"
+    with pytest.raises(ValueError):
+        pageviews_project("uk.evil.com/")
+
+
+def test_domain_and_project_are_distinct_for_all_known_languages() -> None:
+    # The MediaWiki domain and the Pageviews project id are related but never interchangeable.
+    for lang in ("pl", "cs", "en", "uk", "simple"):
+        domain = wikipedia_domain(lang)
+        project = pageviews_project(lang)
+        assert domain == f"{project}.org"
+        assert domain != project
 
 
 def test_endpoint_construction() -> None:
@@ -76,7 +98,7 @@ def test_endpoint_construction() -> None:
     h.fetch()
     url = h.requests[0].url
     assert url.host == "wikimedia.org"
-    assert url.path.startswith("/api/rest_v1/metrics/pageviews/per-article/uk.wikipedia.org/")
+    assert url.path.startswith("/api/rest_v1/metrics/pageviews/per-article/uk.wikipedia/")
     assert url.raw_path.decode().endswith(
         "/all-access/user/%D0%90%D1%81%D1%82%D1%80%D0%BE%D0%BD%D0%BE%D0%BC%D1%96%D1%8F/monthly/2024010100/2024033100"
     )
@@ -134,7 +156,7 @@ def test_article_with_spaces_matches_underscored_upstream() -> None:
     h = Harness(
         ok(
             *[
-                item(m, article="Intermittent_fasting", project="en.wikipedia.org")
+                item(m, article="Intermittent_fasting", project="en.wikipedia")
                 for m in ("2024-01", "2024-02", "2024-03")
             ]
         )
@@ -167,7 +189,7 @@ def test_unknown_fields_ignored() -> None:
         ok(item("2024-01", timestamp="2024-01")),
         ok(item("2024-01", timestamp="2024130100")),
         ok(item("2024-01", article="Other")),
-        ok(item("2024-01", project="pl.wikipedia.org")),
+        ok(item("2024-01", project="pl.wikipedia")),
         ok(item("2024-01", granularity="daily")),
         ok(item("2023-12")),
         ok({k: v for k, v in item("2024-01").items() if k != "views"}),

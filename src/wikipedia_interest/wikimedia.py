@@ -54,11 +54,28 @@ _RETRYABLE_STATUS = frozenset({429, 500, 502, 503, 504})
 _TIMESTAMP_RE = re.compile(r"^(\d{4})(\d{2})0100$")
 
 
-def project_for_language(language: str) -> str:
-    """The single place mapping a Wikipedia language identifier to a Wikimedia project."""
+def _validated_language(language: str) -> str:
     if not _LANGUAGE_RE.match(language):
         raise ValueError(f"malformed Wikipedia language code: {language!r}")
-    return f"{language}.wikipedia.org"
+    return language
+
+
+def wikipedia_domain(language: str) -> str:
+    """The MediaWiki host for a Wikipedia language, e.g. "uk" -> "uk.wikipedia.org".
+
+    Used for MediaWiki page verification. Not interchangeable with `pageviews_project`:
+    the Wikimedia Analytics API identifies projects without the ".org" suffix.
+    """
+    return f"{_validated_language(language)}.wikipedia.org"
+
+
+def pageviews_project(language: str) -> str:
+    """The Wikimedia Analytics/Pageviews project identifier, e.g. "uk" -> "uk.wikipedia".
+
+    Used for Pageviews API requests and response validation. See `wikipedia_domain` for the
+    (different) MediaWiki domain.
+    """
+    return f"{_validated_language(language)}.wikipedia"
 
 
 def api_timestamps(period: Period) -> tuple[str, str]:
@@ -192,7 +209,7 @@ class WikimediaClient:
         if not article.strip():
             issues.append(FieldIssue(field="article", message="article must not be empty"))
         try:
-            project = project_for_language(language)
+            project = pageviews_project(language)
         except ValueError as exc:
             issues.append(FieldIssue(field="language", message=str(exc)))
         if issues:
