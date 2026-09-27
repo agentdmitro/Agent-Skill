@@ -1,0 +1,146 @@
+[
+  {
+    "id": "ambiguous_mercury_en_de",
+    "category": "ambiguity",
+    "description": "Baseline scenario 4: 'Mercury' is ambiguous (planet vs element vs Roman god); must stop for clarification before ANY pageview fetch.",
+    "user_messages": ["Mercury in English and German Wikipedia."],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Mercury",
+          "query_language": "en",
+          "languages": ["en", "de"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": null,
+          "search_candidates": [
+            {"id": "Q308", "label": "Mercury", "description": "first planet from the Sun"},
+            {"id": "Q925", "label": "Mercury", "description": "chemical element"},
+            {"id": "Q19837", "label": "Mercury", "description": "Roman god"}
+          ]
+        },
+        "expected": {
+          "skill_should_activate": true,
+          "requires_clarification": true,
+          "status": "clarification_required",
+          "candidates_at_least": 2,
+          "no_fetch_before_clarification": true,
+          "no_hidden_first_result_selection": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "ambiguous_java",
+    "category": "ambiguity",
+    "description": "'Java' is ambiguous (island vs programming language vs coffee).",
+    "user_messages": ["How has interest in Java changed on Wikipedia?"],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Java",
+          "query_language": "en",
+          "languages": ["en"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "trend"
+        },
+        "fixture": {
+          "qid": null,
+          "search_candidates": [
+            {"id": "Q230", "label": "Java", "description": "programming language"},
+            {"id": "Q3312", "label": "Java", "description": "island of Indonesia"}
+          ]
+        },
+        "expected": {
+          "skill_should_activate": true,
+          "requires_clarification": true,
+          "status": "clarification_required",
+          "candidates_at_least": 2,
+          "no_fetch_before_clarification": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "ambiguous_saturn",
+    "category": "ambiguity",
+    "description": "'Saturn' is ambiguous (planet vs Roman god vs car brand).",
+    "user_messages": ["Compare Saturn interest in English and French Wikipedia."],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Saturn",
+          "query_language": "en",
+          "languages": ["en", "fr"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": null,
+          "search_candidates": [
+            {"id": "Q193", "label": "Saturn", "description": "sixth planet from the Sun"},
+            {"id": "Q1142326", "label": "Saturn", "description": "Roman god"},
+            {"id": "Q1049697", "label": "Saturn Corporation", "description": "car brand"}
+          ]
+        },
+        "expected": {
+          "skill_should_activate": true,
+          "requires_clarification": true,
+          "status": "clarification_required",
+          "candidates_at_least": 2,
+          "no_fetch_before_clarification": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "ambiguous_jordan",
+    "category": "ambiguity",
+    "description": "'Jordan' is ambiguous (country vs Michael Jordan vs river).",
+    "user_messages": ["Is interest in Jordan growing on Wikipedia?"],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Jordan",
+          "query_language": "en",
+          "languages": ["en"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "trend"
+        },
+        "fixture": {
+          "qid": null,
+          "search_candidates": [
+            {"id": "Q810", "label": "Jordan", "description": "country in the Middle East"},
+            {"id": "Q41421", "label": "Jordan", "description": "given name"}
+          ]
+        },
+        "expected": {
+          "skill_should_activate": true,
+          "requires_clarification": true,
+          "status": "clarification_required",
+          "candidates_at_least": 2,
+          "no_fetch_before_clarification": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "unclear_topic_language_missing",
+    "category": "ambiguity",
+    "description": "Topic is clear but query_language is not stated anywhere in the conversation; the agent must ask rather than silently default (SKILL.md rule).",
+    "user_messages": ["How is interest in intermittent fasting trending?"],
+    "turns": [
+      {
+        "simulated_request": null,
+        "expected": {
+          "skill_should_activate": true,
+          "requires_clarification": true,
+          "requires_model": true,
+          "notes": "Missing query_language and target languages/period; must ask, not guess."
+        }
+      }
+    ]
+  }
+]

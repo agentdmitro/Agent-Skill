@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Virtual environment / package manager
+.venv/
+venv/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Generated artifacts (charts / PDF reports from run_analysis.py)
+output/
+
+# Evaluation run output (evals/runner.py) - reproducible, regenerated each run
+eval-results/
+
+# OS cruft
+.DS_Store
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Env files (never commit secrets, e.g. OPENROUTER_API_KEY)
+.env
+.env.*

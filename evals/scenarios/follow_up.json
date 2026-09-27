@@ -1,0 +1,197 @@
+[
+  {
+    "id": "follow_up_add_language",
+    "category": "follow_up",
+    "description": "Turn 2 adds a language; same QID must be reused, topic must not be re-resolved from scratch.",
+    "user_messages": [
+      "Compare astronomy in Polish and Czech Wikipedia over the last 24 months.",
+      "Add Ukrainian."
+    ],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Astronomy",
+          "query_language": "en",
+          "languages": ["pl", "cs"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": "Q333",
+          "label": "Astronomy",
+          "sitelinks": {"pl": "Astronomia", "cs": "Astronomie", "uk": "Астрономія"},
+          "trend": "growing"
+        },
+        "expected": {
+          "status": "success",
+          "expected_topic_id": "Q333",
+          "expected_languages": ["pl", "cs"],
+          "next_state_version": 1
+        }
+      },
+      {
+        "simulated_request": {
+          "topic": "Astronomy",
+          "query_language": "en",
+          "languages": ["pl", "cs", "uk"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare",
+          "previous_state": "turn_0"
+        },
+        "expected": {
+          "status": "success",
+          "expected_topic_id": "Q333",
+          "expected_languages": ["pl", "cs", "uk"],
+          "topic_reused_not_reresolved": true,
+          "same_period_as_previous": true,
+          "next_state_version": 2,
+          "notes": "Only Ukrainian was added; pl/cs must not be re-fetched with a fresh search."
+        }
+      }
+    ]
+  },
+  {
+    "id": "follow_up_change_period",
+    "category": "follow_up",
+    "description": "Turn 2 changes only the period; same QID and languages, analysis recalculated.",
+    "user_messages": [
+      "Compare intermittent fasting in Polish and Czech Wikipedia.",
+      "Use only the last year."
+    ],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Intermittent fasting",
+          "query_language": "en",
+          "languages": ["pl", "cs"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": "Q1360827",
+          "label": "Intermittent fasting",
+          "sitelinks": {"pl": "Przerywany post", "cs": "Prerušovaný půst"},
+          "trend": "growing"
+        },
+        "expected": {
+          "status": "success",
+          "expected_topic_id": "Q1360827",
+          "next_state_version": 1
+        }
+      },
+      {
+        "simulated_request": {
+          "topic": "Intermittent fasting",
+          "query_language": "en",
+          "languages": ["pl", "cs"],
+          "period": {"start": "2025-01", "end": "2025-12"},
+          "intent": "compare",
+          "previous_state": "turn_0"
+        },
+        "expected": {
+          "status": "success",
+          "expected_topic_id": "Q1360827",
+          "expected_languages": ["pl", "cs"],
+          "topic_reused_not_reresolved": true,
+          "period_changed_from_previous": true,
+          "next_state_version": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "follow_up_topic_switch_must_not_reuse_qid",
+    "category": "follow_up",
+    "description": "Turn 2 switches to a genuinely different topic ('astrology' instead of 'astronomy'); the previous QID must NOT be reused, and the engine must reject the mismatched previous_state.",
+    "user_messages": [
+      "Compare astronomy in Polish and Czech Wikipedia.",
+      "Actually, compare astrology instead."
+    ],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Astronomy",
+          "query_language": "en",
+          "languages": ["pl", "cs"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": "Q333",
+          "label": "Astronomy",
+          "sitelinks": {"pl": "Astronomia", "cs": "Astronomie"},
+          "trend": "growing"
+        },
+        "expected": {
+          "status": "success",
+          "expected_topic_id": "Q333",
+          "next_state_version": 1
+        }
+      },
+      {
+        "simulated_request": {
+          "topic": "Astrology",
+          "query_language": "en",
+          "languages": ["pl", "cs"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare",
+          "previous_state": "turn_0"
+        },
+        "expected": {
+          "status": "unsupported",
+          "unsupported_code": "inconsistent_state",
+          "previous_qid_not_reused": true,
+          "notes": "Passing a mismatched previous_state with a new topic must be rejected by the resolver, never silently reused."
+        }
+      }
+    ]
+  },
+  {
+    "id": "follow_up_topic_switch_correct_reresolution",
+    "category": "follow_up",
+    "description": "The correct behavior after a topic switch is to drop previous_state and re-resolve fresh, not to force the old QID.",
+    "user_messages": [
+      "Compare astronomy in Polish and Czech Wikipedia.",
+      "Actually, compare astrology instead."
+    ],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Astronomy",
+          "query_language": "en",
+          "languages": ["pl", "cs"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": "Q333",
+          "label": "Astronomy",
+          "sitelinks": {"pl": "Astronomia", "cs": "Astronomie"},
+          "trend": "growing"
+        },
+        "expected": {"status": "success", "expected_topic_id": "Q333"}
+      },
+      {
+        "simulated_request": {
+          "topic": "Astrology",
+          "query_language": "en",
+          "languages": ["pl", "cs"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": "Q22568",
+          "label": "Astrology",
+          "sitelinks": {"pl": "Astrologia", "cs": "Astrologie"},
+          "trend": "stable"
+        },
+        "expected": {
+          "status": "success",
+          "expected_topic_id": "Q22568",
+          "topic_freshly_resolved": true,
+          "next_state_version": 1
+        }
+      }
+    ]
+  }
+]

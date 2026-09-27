@@ -1,0 +1,271 @@
+[
+  {
+    "id": "activate_compare_fasting_pl_cs",
+    "category": "basic",
+    "description": "Baseline scenario 1: compare growth in intermittent fasting, pl vs cs, over two years.",
+    "user_messages": [
+      "Compare growth in interest in intermittent fasting in Polish and Czech Wikipedia over the last two years."
+    ],
+    "reference_date": "2026-01-15",
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Intermittent fasting",
+          "query_language": "en",
+          "languages": ["pl", "cs"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": "Q1360827",
+          "label": "Intermittent fasting",
+          "sitelinks": {"pl": "Przerywany post", "cs": "Prerušovaný půst"},
+          "trend": "growing"
+        },
+        "expected": {
+          "skill_should_activate": true,
+          "requires_clarification": false,
+          "status": "success",
+          "expected_topic_id": "Q1360827",
+          "expected_languages": ["pl", "cs"],
+          "expected_intent": "compare",
+          "min_languages_analyzed": 2,
+          "comparison_present": true,
+          "forbidden_in_findings": false,
+          "notes": "No business-market conclusion beyond further-validation classification."
+        }
+      }
+    ]
+  },
+  {
+    "id": "activate_trend_astronomy_uk",
+    "category": "basic",
+    "description": "Baseline scenario 2: single-language trend with reliability, no purchase-intent inference.",
+    "user_messages": [
+      "We are considering adding an astronomy course. Is interest growing in Ukrainian Wikipedia and how much can we trust the trend?"
+    ],
+    "reference_date": "2026-01-15",
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Astronomy",
+          "query_language": "en",
+          "languages": ["uk"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "trend"
+        },
+        "fixture": {
+          "qid": "Q333",
+          "label": "Astronomy",
+          "sitelinks": {"uk": "Астрономія"},
+          "trend": "growing"
+        },
+        "expected": {
+          "skill_should_activate": true,
+          "requires_clarification": false,
+          "status": "success",
+          "expected_topic_id": "Q333",
+          "expected_languages": ["uk"],
+          "expected_intent": "trend",
+          "min_languages_analyzed": 1,
+          "comparison_present": false,
+          "reliability_field_present": true,
+          "forbidden_in_findings": false
+        }
+      }
+    ]
+  },
+  {
+    "id": "activate_compare_english_uk_pl_cs",
+    "category": "basic",
+    "description": "Baseline scenario 3: one entity, three editions; highest raw pageviews != largest market.",
+    "user_messages": [
+      "Compare interest in learning English across Ukrainian, Polish and Czech Wikipedia."
+    ],
+    "reference_date": "2026-01-15",
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "English as a second or foreign language",
+          "query_language": "en",
+          "languages": ["uk", "pl", "cs"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": "Q621534",
+          "label": "English as a second or foreign language",
+          "sitelinks": {
+            "uk": "Англійська як іноземна",
+            "pl": "Angielski jako obcy",
+            "cs": "Angličtina jako cizí jazyk"
+          },
+          "trend": "growing"
+        },
+        "expected": {
+          "skill_should_activate": true,
+          "requires_clarification": false,
+          "status": "success",
+          "expected_topic_id": "Q621534",
+          "expected_languages": ["uk", "pl", "cs"],
+          "expected_intent": "compare",
+          "min_languages_analyzed": 3,
+          "comparison_present": true,
+          "forbidden_in_findings": false,
+          "notes": "Highest total_views must never be reported as 'largest market'."
+        }
+      }
+    ]
+  },
+  {
+    "id": "direct_qid_mercury_planet",
+    "category": "basic",
+    "description": "Baseline scenario 5: direct QID path skips topic search entirely.",
+    "user_messages": ["Analyze Q308 in Ukrainian and Polish Wikipedia."],
+    "reference_date": "2026-01-15",
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Q308",
+          "query_language": "en",
+          "languages": ["uk", "pl"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": "Q308",
+          "label": "Mercury",
+          "sitelinks": {"uk": "Меркурій (планета)", "pl": "Merkury (planeta)"},
+          "trend": "stable"
+        },
+        "expected": {
+          "skill_should_activate": true,
+          "requires_clarification": false,
+          "status": "success",
+          "expected_topic_id": "Q308",
+          "expected_languages": ["uk", "pl"],
+          "no_topic_search_performed": true,
+          "min_languages_analyzed": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "unicode_ukrainian_query",
+    "category": "basic",
+    "description": "Unicode survives through topic, article titles, and compact JSON.",
+    "user_messages": ["Порівняй інтерес до вивчення програмування в українській та польській Вікіпедії."],
+    "reference_date": "2026-01-15",
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Програмування",
+          "query_language": "uk",
+          "languages": ["uk", "pl"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": "Q80006",
+          "label": "Програмування",
+          "query_language": "uk",
+          "sitelinks": {"uk": "Програмування", "pl": "Programowanie"},
+          "trend": "growing"
+        },
+        "expected": {
+          "skill_should_activate": true,
+          "requires_clarification": false,
+          "status": "success",
+          "expected_topic_id": "Q80006",
+          "expected_languages": ["uk", "pl"],
+          "titles_are_utf8": true,
+          "min_languages_analyzed": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": "report_request_pdf",
+    "category": "basic",
+    "description": "Report-generation request: artifact requested, analysis stays primary.",
+    "user_messages": ["Prepare a one-page PDF for the astronomy interest analysis in English."],
+    "reference_date": "2026-01-15",
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Astronomy",
+          "query_language": "en",
+          "languages": ["en"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "trend",
+          "artifacts": ["report"]
+        },
+        "fixture": {
+          "qid": "Q333",
+          "label": "Astronomy",
+          "sitelinks": {"en": "Astronomy"},
+          "trend": "growing"
+        },
+        "expected": {
+          "skill_should_activate": true,
+          "requires_clarification": false,
+          "status": "success",
+          "artifact_requested": "report",
+          "analysis_present_regardless_of_artifact_outcome": true
+        }
+      }
+    ]
+  },
+  {
+    "id": "activation_negative_who_invented_python",
+    "category": "basic",
+    "description": "Should NOT activate: generic trivia question, not a Wikipedia-interest-signal request.",
+    "user_messages": ["Who invented Python?"],
+    "turns": [
+      {
+        "simulated_request": null,
+        "expected": {
+          "skill_should_activate": false,
+          "requires_model": true,
+          "notes": "General knowledge question; the skill is not a generic research tool."
+        }
+      }
+    ]
+  },
+  {
+    "id": "activation_negative_weather",
+    "category": "basic",
+    "description": "Should NOT activate: unrelated domain.",
+    "user_messages": ["What's the weather like in Kyiv this weekend?"],
+    "turns": [
+      {
+        "simulated_request": null,
+        "expected": {"skill_should_activate": false, "requires_model": true}
+      }
+    ]
+  },
+  {
+    "id": "activation_negative_coding_question",
+    "category": "basic",
+    "description": "Should NOT activate: coding help, unrelated to Wikipedia interest signals.",
+    "user_messages": ["Why is my Python list comprehension raising a TypeError?"],
+    "turns": [
+      {
+        "simulated_request": null,
+        "expected": {"skill_should_activate": false, "requires_model": true}
+      }
+    ]
+  },
+  {
+    "id": "activation_negative_generic_market_research",
+    "category": "basic",
+    "description": "Should NOT activate: product-market research that never mentions or requires Wikipedia data.",
+    "user_messages": ["What survey methodology should we use to size the market for a new fitness app?"],
+    "turns": [
+      {
+        "simulated_request": null,
+        "expected": {"skill_should_activate": false, "requires_model": true}
+      }
+    ]
+  }
+]

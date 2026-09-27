@@ -1,0 +1,143 @@
+[
+  {
+    "id": "partial_failure_sk_timeout",
+    "category": "failures",
+    "description": "PL and CS succeed; SK times out upstream. SK must be reported as failed-to-analyze (retryable), never as low interest, and never silently dropped.",
+    "user_messages": ["Compare astronomy in Polish, Czech, and Slovak Wikipedia."],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Astronomy",
+          "query_language": "en",
+          "languages": ["pl", "cs", "sk"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": "Q333",
+          "label": "Astronomy",
+          "sitelinks": {"pl": "Astronomia", "cs": "Astronomie", "sk": "Astronómia"},
+          "trend": "growing",
+          "timeout_languages": ["sk"]
+        },
+        "expected": {
+          "status": "success",
+          "min_languages_analyzed": 2,
+          "expected_languages": ["pl", "cs"],
+          "unavailable_languages": ["sk"],
+          "unavailable_category": "upstream_failure",
+          "unavailable_retryable": true,
+          "comparison_present": true,
+          "notes": "SK must not be treated as domain-unavailable or low-interest; it is an infra failure."
+        }
+      }
+    ]
+  },
+  {
+    "id": "partial_no_sitelink_below_comparison_minimum",
+    "category": "failures",
+    "description": "PL succeeds; CS has no sitelink. Only one language is analyzed, so cross-language comparison is unavailable (below the two-language minimum), while the PL analysis itself remains available.",
+    "user_messages": ["Compare astronomy in Polish and Czech Wikipedia."],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Astronomy",
+          "query_language": "en",
+          "languages": ["pl", "cs"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {
+          "qid": "Q333",
+          "label": "Astronomy",
+          "sitelinks": {"pl": "Astronomia"},
+          "trend": "growing"
+        },
+        "expected": {
+          "status": "success",
+          "expected_languages": ["pl"],
+          "unavailable_languages": ["cs"],
+          "unavailable_category": "domain_unavailable",
+          "unavailable_retryable": false,
+          "comparison_present": false,
+          "comparison_rejected_reason": "insufficient_languages",
+          "notes": "No fabricated Czech article; PL analysis must remain fully available."
+        }
+      }
+    ]
+  },
+  {
+    "id": "insufficient_data_sparse_series",
+    "category": "failures",
+    "description": "Only 5 valid months of data: insufficient_data must remain explicit, no trend or reliability upgrade.",
+    "user_messages": ["Is interest in a newly created article growing on English Wikipedia?"],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Astronomy",
+          "query_language": "en",
+          "languages": ["en"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "trend"
+        },
+        "fixture": {
+          "qid": "Q333",
+          "label": "Astronomy",
+          "sitelinks": {"en": "Astronomy"},
+          "sparse": true
+        },
+        "expected": {
+          "status": "success",
+          "expected_languages": ["en"],
+          "trend_direction": "insufficient_data",
+          "reliability": "insufficient",
+          "forbidden_claims_in_findings": ["clearly growing"]
+        }
+      }
+    ]
+  },
+  {
+    "id": "invalid_input_malformed_period",
+    "category": "failures",
+    "description": "Malformed/inverted period must be reported plainly, never silently corrected.",
+    "user_messages": ["Compare astronomy interest from December 2025 to January 2024."],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Astronomy",
+          "query_language": "en",
+          "languages": ["en", "pl"],
+          "period": {"start": "2025-12", "end": "2024-01"},
+          "intent": "compare"
+        },
+        "fixture": {"qid": "Q333", "label": "Astronomy", "sitelinks": {"en": "Astronomy", "pl": "Astronomia"}},
+        "expected": {
+          "status": "invalid_input",
+          "notes": "period.start must be before period.end; the engine must reject, not swap the dates itself."
+        }
+      }
+    ]
+  },
+  {
+    "id": "upstream_failure_wikidata_unavailable",
+    "category": "failures",
+    "description": "Wikidata itself is unreachable (HTTP 503 on every retry). The engine must report upstream_failure and retryable, never fabricate a resolution.",
+    "user_messages": ["Compare astronomy interest in Polish and Czech Wikipedia."],
+    "turns": [
+      {
+        "simulated_request": {
+          "topic": "Astronomy",
+          "query_language": "en",
+          "languages": ["pl", "cs"],
+          "period": {"start": "2024-01", "end": "2025-12"},
+          "intent": "compare"
+        },
+        "fixture": {"qid": "Q333", "label": "Astronomy", "sitelinks": {"pl": "Astronomia", "cs": "Astronomie"}, "resolver_always_503": true},
+        "expected": {
+          "status": "upstream_failure",
+          "retryable": true
+        }
+      }
+    ]
+  }
+]
